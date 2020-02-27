@@ -80,6 +80,11 @@ if __name__ == '__main__':
     directory = args.inputDir
     outputdir = args.outputDir
     extensions = tuple(args.extensions.split())
+    
+    if args.dateFormat:
+        datestyle = args.dateFormat
+    else:
+        datestyle = 'year'
 
     target_items = MediaSortObj(extensions)
     media_list = target_items.items_list
@@ -88,6 +93,6 @@ if __name__ == '__main__':
         for file in files:
             if file.lower().endswith(target_items.extension):
                 media_list.append(os.path.join(root, file))
-    target_items.sort(media_list, outputdir=outputdir, style=args.dateFormat)
+    target_items.sort(media_list, outputdir=outputdir, style=datestyle)
 
 
