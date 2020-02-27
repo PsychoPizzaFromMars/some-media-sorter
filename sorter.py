@@ -13,24 +13,18 @@ class MediaSortObj:
     def _date_format(self, date, style):  
         if style == 'month':
             if date[5:7] == '00':
-                date = date[:5] + 'без даты'
+                date = date[:5] + 'undated'
             else:
                 pass
             # "2019-01"
 
         elif style == 'year':
             if date[5:7] == '00':
-                date = date[:5] + 'без даты'
+                date = date[:5] + 'undated'
             else:
                 date = date[:4]
             # "2019"
         return date
-
-    def _copysortedfiles(self, dirname, filename, targetfiles='files'):
-        if not os.path.exists(dirname):
-            os.mkdir(dirname)
-        if not os.path.exists(dirname + "/" + os.path.basename(filename)):
-            shutil.copy2(filename, dirname + "/" + os.path.basename(filename))
 
     def sort(self, files, targetname='Sorted', style='year', outputdir=None):
         if __name__ == '__main__' and outputdir == None:
@@ -39,7 +33,7 @@ class MediaSortObj:
             os.mkdir(outputdir)
         os.chdir(outputdir)
         for file in files:
-            print(file, '                 ', end='\r')
+            print(file, '                                        ', end='\r')
             if os.path.isfile(file):
                 try:
                     pic = piexif.load(file)
@@ -66,21 +60,20 @@ class MediaSortObj:
                     date = date_exif
                     date = self._date_format(date, style)
                     
-                self._copysortedfiles(date, file, targetname)
+                # Copy files to sorting directories
+                if not os.path.exists(date):
+                    os.mkdir(date)
+                if not os.path.exists(date + "/" + os.path.basename(file)):
+                    shutil.copy2(file, date + "/" + os.path.basename(file))
 
 if __name__ == '__main__':
     descStr = "This program sorts media files of different extensions by EXIF and system date tags"
     parser = argparse.ArgumentParser(description=descStr)
-    # add expected arguments
-    # parser.add_argument('--ext', dest='mediaExtensions', required=True)
-    # parser.add_argument('--dir', dest='inputDir', required=True)
-    # parser.add_argument('--out', dest='outputDir', required=False)
-    # parser.add_argument('--dformat', dest='dateFormat', required=False)
 
-    parser.add_argument('extensions')
-    parser.add_argument('inputDir')
-    parser.add_argument('outputDir')  
-    parser.add_argument('--dformat', dest='dateFormat', required=False, help='\'year\' or \'month\'')
+    parser.add_argument('extensions', help='extensions you want to sort as \".ext1 .ext2 .ext3 ... .extN\"')
+    parser.add_argument('inputDir', help='Path to target media files')
+    parser.add_argument('outputDir', help='Path to sorted media files')  
+    parser.add_argument('--dformat', dest='dateFormat', required=False, help='defines sorting dirs - \"year\"(default) or \"month\"')
 
     args = parser.parse_args()
 
@@ -88,15 +81,13 @@ if __name__ == '__main__':
     outputdir = args.outputDir
     extensions = tuple(args.extensions.split())
 
-    test_item = MediaSortObj(extensions)
-    media_list = test_item.items_list
+    target_items = MediaSortObj(extensions)
+    media_list = target_items.items_list
    
     for root, dirs, files in os.walk(directory):
         for file in files:
-            if file.lower().endswith(test_item.extension):
+            if file.lower().endswith(target_items.extension):
                 media_list.append(os.path.join(root, file))
-    test_item.sort(media_list, targetname='Test dir 2', outputdir=outputdir)
-
-
+    target_items.sort(media_list, outputdir=outputdir)
 
 
