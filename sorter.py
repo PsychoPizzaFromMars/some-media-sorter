@@ -64,7 +64,7 @@ class MediaSortObj:
                 if not os.path.exists(date):
                     os.mkdir(date)
                 if not os.path.exists(date + "/" + os.path.basename(file)):
-                    shutil.copy2(file, date + "/" + os.path.basename(file))
+                    shutil.move(file, date + "/" + os.path.basename(file))
 
 if __name__ == '__main__':
     descStr = "This program sorts media files of different extensions by EXIF and system date tags"
@@ -88,6 +88,6 @@ if __name__ == '__main__':
         for file in files:
             if file.lower().endswith(target_items.extension):
                 media_list.append(os.path.join(root, file))
-    target_items.sort(media_list, outputdir=outputdir)
+    target_items.sort(media_list, outputdir=outputdir, style=args.dateFormat)
 
 
