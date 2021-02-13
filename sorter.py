@@ -26,7 +26,7 @@ class MediaSortObj:
                 date = date[:4]
         return date
 
-    def sort(self, files, targetname='Sorted', style='year', outputdir=None):
+    def sort(self, files, targetname='Sorted', style='year', outputdir=None, safemode=False):
         if __name__ == '__main__' and outputdir == None:
             outputdir = os.getcwd() + f'\\{targetname}'
         if not os.path.exists(outputdir):
@@ -64,7 +64,10 @@ class MediaSortObj:
                 if not os.path.exists(date):
                     os.mkdir(date)
                 if not os.path.exists(date + "/" + os.path.basename(file)):
-                    shutil.move(file, date + "/" + os.path.basename(file))
+                    if safemode:
+                        shutil.copy2(file, date + "/" + os.path.basename(file))
+                    else:
+                        shutil.move(file, date + "/" + os.path.basename(file))
 
 
 if __name__ == '__main__':
@@ -77,6 +80,8 @@ if __name__ == '__main__':
         '-e', '--extensions', dest='extensions', required=False, help='extensions you want to sort, e.g. \".jpg .png .bmp\" (default=\".jpeg .jpg .png\")')
     parser.add_argument('--dformat', dest='dateFormat', required=False,
                         help='defines output folders\' names format - \"year\" (yyyy) or \"month\" (yyyy-mm) (default=\"year\")')
+    parser.add_argument(
+        '-s', '--safemode', dest='safemode', action="store_true", required=False, help='copy files instead of moving when enabled (default=False)')
 
     args = parser.parse_args()
 
@@ -93,6 +98,11 @@ if __name__ == '__main__':
     else:
         datestyle = 'year'
 
+    if args.safemode:
+        safemode = args.safemode
+    else:
+        safemode = False
+
     target_items = MediaSortObj(extensions)
     media_list = target_items.items_list
 
@@ -100,4 +110,5 @@ if __name__ == '__main__':
         for file in files:
             if file.lower().endswith(target_items.extension):
                 media_list.append(os.path.join(root, file))
-    target_items.sort(media_list, outputdir=outputdir, style=datestyle)
+    target_items.sort(media_list, outputdir=outputdir,
+                      style=datestyle, safemode=safemode)
